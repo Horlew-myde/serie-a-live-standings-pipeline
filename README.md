@@ -16,8 +16,8 @@
 - Clean, production-grade code
 
 ## Screenshot
-![dashboard screenshot](images/Screenshot 2026-02-17 143906.png)
-(images/Screenshot 2026-02-17 144201.png)
+![dashboard screenshot](images/Screenshot-2026-02-17-143906.png)
+![dashboard screenshot](images/Screenshot-2026-02-17-144201.png)
 
 ## Tech Stack
 Python • Pandas • MySQL • RapidAPI • Streamlit • Windows Task Scheduler
