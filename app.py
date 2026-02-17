@@ -12,9 +12,9 @@ API_KEY = st.secrets.get("API_KEY")
 if not API_KEY and "API_KEY" in st.secrets:
     API_KEY = st.secrets["API_KEY"]
 
-API_HOST = "livescore6.p.rapidapi.com"  # Hardcoded (no need for .env)
+API_HOST = "livescore6.p.rapidapi.com"  
 
-@st.cache_data(ttl=86400)  # Cache for 1 hour (fetches fresh data hourly, but you can adjust)
+@st.cache_data(ttl=86400)  # Cache for 24 hour (fetches fresh every 24 hours)
 def get_serie_a_standings():
     """Fetch and process Serie A standings from the API"""
     url = "https://livescore6.p.rapidapi.com/leagues/v2/get-table"
@@ -98,10 +98,13 @@ try:
         }
     )
     
-    # Optional: Highlight top teams
+    #  Highlight top teams
     st.markdown("### Top 4 (Champions League spots)")
     st.dataframe(df.head(4)[['position', 'team', 'points']], use_container_width=True)
-    
+
+    #  Highlight Relegation teams
+    st.markdown("### Bottom 3 (Relegation spots)")
+    st.dataframe(df.tail(3)[['position', 'team', 'points']], use_container_width=True) 
 except Exception as e:
     st.error(f"Error fetching data: {e}")
     st.info("Make sure your API_KEY is set correctly.")
@@ -109,3 +112,4 @@ except Exception as e:
 # Footer
 
 st.caption("Built with ❤️ using Streamlit + RapidAPI • Data refreshes automatically")
+
