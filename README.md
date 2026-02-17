@@ -4,7 +4,7 @@
 ![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
 ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
 
-**Live Dashboard**: https://olumide-serie-a.streamlit.app  
+**Live Dashboard**: https://olumide-serie-a-live-standings-pipeline.streamlit.app/
 **Last updated**: Automatically every day at 11:30 PM WAT ⏰
 
 ## Features
