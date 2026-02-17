@@ -2,13 +2,13 @@ import streamlit as st
 import pandas as pd
 import requests
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 # Load .env for local development (ignored in GitHub)
-load_dotenv()
+# load_dotenv()
 
 # Get API credentials - works locally with .env OR on Streamlit with st.secrets
-API_KEY = os.getenv("API_KEY")
+API_KEY = st.secrets.get("API_KEY")
 if not API_KEY and "API_KEY" in st.secrets:
     API_KEY = st.secrets["API_KEY"]
 
@@ -107,4 +107,5 @@ except Exception as e:
     st.info("Make sure your API_KEY is set correctly.")
 
 # Footer
+
 st.caption("Built with ❤️ using Streamlit + RapidAPI • Data refreshes automatically")
