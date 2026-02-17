@@ -6,7 +6,7 @@
 
 **Live Dashboard**: https://olumide-serie-a-live-standings-pipeline.streamlit.app/
 
-**Last updated**: Automatically every day at 11:30 PM WAT ⏰
+**Last updated**: Automatically every day ⏰
 
 ## Features
 - Fully automated daily update
