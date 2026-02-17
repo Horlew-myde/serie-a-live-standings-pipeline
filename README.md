@@ -17,6 +17,7 @@
 
 ## Screenshot
 ![dashboard screenshot](images/Screenshot-2026-02-17-143906.png)
+![dashboard screenshot](images/envfilesample.png)
 ![dashboard screenshot](images/Screenshot-2026-02-17-144201.png)
 
 ## Tech Stack
