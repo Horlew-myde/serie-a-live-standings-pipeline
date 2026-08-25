@@ -41,7 +41,7 @@ def get_serie_a_standings():
     # Build rows for DataFrame
     rows = []
     for club in standing_list:
-        season = 2026/2027  # Hardcoded for current season (update if needed)
+        season = 2026 / 2027  # Hardcoded for current season (update if needed)
         position = club["rnk"]
         team = club["Tnm"]
         played = club["pld"]
