@@ -4,16 +4,34 @@ import pandas as pd
 import streamlit as st
 
 # -----------------------------
-# Configuration & Setup
+# Configuration & Page Style
 # -----------------------------
 st.set_page_config(
-    page_title="Serie A Dashboard",
-    page_icon="🏆",
+    page_title="Serie A Live Standings",
+    page_icon="⚽",
     layout="wide",
-    initial_sidebar_state="expanded"
 )
 
-# RapidAPI Credentials
+# Custom CSS for a cleaner, centered look
+st.markdown("""
+    <style>
+    .main .block-container {
+        max-width: 1000px;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    .stMetric {
+        background-color: #1E1E1E;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# -----------------------------
+# API Credentials
+# -----------------------------
 API_KEY = "ea792a59a3msh0e2da56cee146d3p17f2f7jsn76e3483ef0b1"
 API_HOST = "free-api-live-football-data.p.rapidapi.com"
 
@@ -23,12 +41,11 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-# Strictly Serie A
 LEAGUE_ID = 55
 SEASON = "Current"
 
 # -----------------------------
-# Data Fetching Functions
+# Data Fetching Function
 # -----------------------------
 @st.cache_data(ttl=3600)
 def fetch_standings(league_id: int, season: str = "Current") -> pd.DataFrame:
@@ -42,123 +59,57 @@ def fetch_standings(league_id: int, season: str = "Current") -> pd.DataFrame:
         
         standings_list = data.get("response", {}).get("standing", [])
         rows = []
-        column_names = ['season', 'position', 'team', 'played', 'won', 'draw', 'lost', 'goals_for', 'goals_against', 'goals_difference', 'points']
+        column_names = ['Season', 'Pos', 'Team', 'Played', 'Won', 'Draw', 'Lost', 'GF', 'GA', 'GD', 'Points']
         
         for club in standings_list:
-            season_val = season
-            position = club.get("idx")
-            team = club.get("name")
-            played = club.get("played")
-            won = club.get("wins")
-            draw = club.get("draws")
-            lost = club.get("losses")
-            
             scores_str = club.get("scoresStr", "0-0")
-            if "-" in scores_str:
-                scores = scores_str.split("-")
-                goals_for = int(scores[0])
-                goals_against = int(scores[1])
-            else:
-                goals_for = 0
-                goals_against = 0
+            scores = scores_str.split("-") if "-" in scores_str else [0, 0]
                 
-            goals_difference = club.get("goalConDiff")
-            points = club.get("pts")
-            
-            tuple_of_club_records = (season_val, position, team, played, won, draw, lost, goals_for, goals_against, goals_difference, points)
-            rows.append(tuple_of_club_records)
+            rows.append((
+                season, 
+                club.get("idx"), 
+                club.get("name"), 
+                club.get("played"), 
+                club.get("wins"), 
+                club.get("draws"), 
+                club.get("losses"), 
+                int(scores[0]), 
+                int(scores[1]), 
+                club.get("goalConDiff"), 
+                club.get("pts")
+            ))
             
         return pd.DataFrame(rows, columns=column_names)
     except Exception as e:
         st.error(f"Error fetching standings: {e}")
         return pd.DataFrame()
 
-@st.cache_data(ttl=3600)
-def fetch_player_stats(endpoint_name: str, league_id: int) -> pd.DataFrame:
-    """Fetch player stats and parse into a DataFrame."""
-    url = f"https://free-api-live-football-data.p.rapidapi.com/{endpoint_name}"
-    params = {"leagueid": str(league_id)}
-    try:
-        res = requests.get(url, headers=HEADERS, params=params, timeout=10)
-        res.raise_for_status()
-        data = res.json()
-        
-        raw_response = data.get("response", [])
-        player_list = []
-        
-        if isinstance(raw_response, list):
-            player_list = raw_response
-        elif isinstance(raw_response, dict):
-            # Locate the list inside the dictionary
-            for key, val in raw_response.items():
-                if isinstance(val, list):
-                    player_list = val
-                    break
-                    
-        rows = []
-        if player_list:
-            for player in player_list:
-                player_name = player.get("name", "N/A")
-                
-                # Determine stat type dynamically
-                if "goals" in player:
-                    stat_val, stat_name = player.get("goals"), "Goals"
-                elif "assists" in player:
-                    stat_val, stat_name = player.get("assists"), "Assists"
-                elif "rating" in player:
-                    stat_val, stat_name = player.get("rating"), "Rating"
-                else:
-                    stat_val = next((v for k, v in player.items() if isinstance(v, (int, float)) and k != "id"), "N/A")
-                    stat_name = "Value"
-                
-                # FIX: Removed the undefined 'position' variable here
-                rows.append((player_name, stat_val))
-                
-            return pd.DataFrame(rows, columns=["Player", stat_name])
-            
-        return pd.DataFrame()
-    except Exception as e:
-        st.sidebar.error(f"Error fetching {endpoint_name}: {e}")
-        return pd.DataFrame()
+# -----------------------------
+# Main Content Area
+# -----------------------------
+st.markdown("<h1 style='text-align: center;'>🏆 Serie A Matchweek Standings</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888888; font-size: 18px;'>Real-time league table updates pulled directly from live sports APIs.</p>", unsafe_allow_html=True)
+st.markdown("---")
 
-# -----------------------------
-# Load Data
-# -----------------------------
 standings_df = fetch_standings(LEAGUE_ID)
-top_goals_df = fetch_player_stats("football-get-top-players-by-goals", LEAGUE_ID)
-top_assists_df = fetch_player_stats("football-get-top-players-by-assists", LEAGUE_ID)
-top_ratings_df = fetch_player_stats("football-get-top-players-by-rating", LEAGUE_ID)
-
-# -----------------------------
-# Main Content Area: Standings
-# -----------------------------
-st.title("🏆 Serie A (Italy) Dashboard")
 
 if not standings_df.empty:
+    # Highlight Metrics Row
+    leader = standings_df.iloc[0]
+    runner_up = standings_df.iloc[1]
+    
+    col1, col2, col3 = st.columns(3)
+    col1.metric("🥇 1st Place", leader["Team"], f"{leader['Points']} pts")
+    col2.metric("🥈 2nd Place", runner_up["Team"], f"{runner_up['Points']} pts")
+    col3.metric("⚽ Total Teams Tracked", len(standings_df))
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Beautified DataFrame
     st.dataframe(
-        standings_df.set_index("position"), 
+        standings_df.set_index("Pos"), 
         use_container_width=True, 
-        height=800
+        height=750
     )
 else:
     st.warning("No league standings data available right now.")
-
-# -----------------------------
-# Sidebar Area: Player Statistics
-# -----------------------------
-st.sidebar.title("📊 Player Statistics")
-
-st.sidebar.markdown("### ⚽ Top Goalscorers")
-if not top_goals_df.empty:
-    top_goals_df.index = top_goals_df.index + 1
-    st.sidebar.dataframe(top_goals_df, use_container_width=True)
-
-st.sidebar.markdown("### 🎯 Top Assists")
-if not top_assists_df.empty:
-    top_assists_df.index = top_assists_df.index + 1
-    st.sidebar.dataframe(top_assists_df, use_container_width=True)
-
-st.sidebar.markdown("### ⭐ Player Ratings")
-if not top_ratings_df.empty:
-    top_ratings_df.index = top_ratings_df.index + 1
-    st.sidebar.dataframe(top_ratings_df, use_container_width=True)
